@@ -31,7 +31,7 @@ if %FOUND%==0 (
 rem Check for updates
 echo Checking for Updates!
 echo ...
-git pull origin main > gitpull.log
+git pull origin master > gitpull.log
 type gitpull.log
 findstr /C:"Already up to date" gitpull.log >nul
 if errorlevel 1 (
