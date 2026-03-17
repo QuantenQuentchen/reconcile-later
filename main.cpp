@@ -49,7 +49,7 @@ int main() {
         "ShipMaterial",
         {
             .blendMode = BLEND_ALPHA, .renderPass = RenderPass::MAIN_RENDER,
-            .texture = textureCache.load(std::filesystem::path{"assets\\spaceship.svg"}),
+            .texture = textureCache.load(std::filesystem::path{".\\assets\\spaceship.svg"}),
             .shader = Cache::ShaderCache::get()
         }), WHITE);
     registry.emplace<Marker::PLAYER>(player);
