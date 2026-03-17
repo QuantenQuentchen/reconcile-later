@@ -69,23 +69,27 @@ namespace Cache
             if (svgBuffer.empty()) return image;
 
             NSVGimage *svg = nsvgParse(svgBuffer.data(), "px", 96.0f);
+            if (svg == nullptr) std::cerr << "Failed to parse SVG file: " << filePath << std::endl;
             if (svg == nullptr) return image;
 
             const int width = (targetWidth > 0) ? targetWidth : static_cast<int>(std::ceil(svg->width));
             const int height = (targetHeight > 0) ? targetHeight : static_cast<int>(std::ceil(svg->height));
             if (width <= 0 || height <= 0) {
+                std::cerr << "Invalid SVG dimensions: " << width << "x" << height << std::endl;
                 nsvgDelete(svg);
                 return image;
             }
 
             NSVGrasterizer *rasterizer = nsvgCreateRasterizer();
             if (rasterizer == nullptr) {
+                std::cerr << "Failed to create rasterizer" << std::endl;
                 nsvgDelete(svg);
                 return image;
             }
 
             auto *pixels = static_cast<unsigned char *>(std::malloc(static_cast<size_t>(width) * height * 4));
             if (pixels == nullptr) {
+                std::cerr << "Failed to allocate memory for rasterized image" << std::endl;
                 nsvgDeleteRasterizer(rasterizer);
                 nsvgDelete(svg);
                 return image;
