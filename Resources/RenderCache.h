@@ -65,6 +65,7 @@ namespace Cache
 
             // Parse from in-memory SVG bytes so Windows wide paths are handled by std::filesystem streams.
             auto svgBuffer = ReadFileToBuffer(filePath);
+            if (svgBuffer.empty()) std::cerr << "Failed to read SVG file: " << filePath << std::endl;
             if (svgBuffer.empty()) return image;
 
             NSVGimage *svg = nsvgParse(svgBuffer.data(), "px", 96.0f);
