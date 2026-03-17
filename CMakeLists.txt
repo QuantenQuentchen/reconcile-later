@@ -2,7 +2,11 @@ cmake_minimum_required(VERSION 3.20)
 project(N_1)
 
 set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if (MSVC)
+    add_compile_options(/std:c++latest)
+endif()
 include(FetchContent)
 
 # Keep raylib dependency lean for local app builds.
