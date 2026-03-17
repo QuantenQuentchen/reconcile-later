@@ -5,6 +5,7 @@
 #pragma once
 #include <cstdint>
 #include <filesystem>
+#include <fstream>
 #include <Texture.hpp>
 #include <vector>
 #include <expected>
@@ -28,18 +29,45 @@ namespace Cache
 
         TextureID load(const std::filesystem::path& path, const int targetWidth = 0, const int targetHeight = 0) {
             if (path.extension() == ".svg")
-                textures.emplace_back(LoadImageSVG(path.string().c_str(), targetWidth, targetHeight));
+            {
+                std::cout << "Loading SVG: " << path << " with target size: " << targetWidth << "x" << targetHeight << std::endl;
+                textures.emplace_back(LoadImageSVG(path, targetWidth, targetHeight));
+            }
             else
+            {
+                std::cout << "Loading Texture: " << path << std::endl;
                 textures.emplace_back(LoadTexture(path.string().c_str()));
+            }
             return static_cast<TextureID>(textures.size() - 1);
         }
 
         [[nodiscard]] const RTexture& get(const TextureID id) const { return textures[id]; }
     private:
-        static Image LoadImageSVG(const char *filePath, const int targetWidth, const int targetHeight) {
+        static std::vector<char> ReadFileToBuffer(const std::filesystem::path& path) {
+            std::ifstream file(path, std::ios::binary | std::ios::ate);
+            if (!file) return {};
+
+            const auto fileSize = file.tellg();
+            if (fileSize < 0) return {};
+
+            std::vector<char> buffer(static_cast<size_t>(fileSize) + 1, '\0');
+            file.seekg(0, std::ios::beg);
+            if (fileSize > 0) {
+                file.read(buffer.data(), fileSize);
+                if (!file) return {};
+            }
+
+            return buffer;
+        }
+
+        static Image LoadImageSVG(const std::filesystem::path& filePath, const int targetWidth, const int targetHeight) {
             Image image = {};
 
-            NSVGimage *svg = nsvgParseFromFile(filePath, "px", 96.0f);
+            // Parse from in-memory SVG bytes so Windows wide paths are handled by std::filesystem streams.
+            auto svgBuffer = ReadFileToBuffer(filePath);
+            if (svgBuffer.empty()) return image;
+
+            NSVGimage *svg = nsvgParse(svgBuffer.data(), "px", 96.0f);
             if (svg == nullptr) return image;
 
             const int width = (targetWidth > 0) ? targetWidth : static_cast<int>(std::ceil(svg->width));
